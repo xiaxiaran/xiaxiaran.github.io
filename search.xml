@@ -155,9 +155,9 @@
       
         <tags>
             
-            <tag> TFTP敏感文件泄露 </tag>
-            
             <tag> 提权 </tag>
+            
+            <tag> TFTP敏感文件泄露 </tag>
             
         </tags>
       
@@ -304,9 +304,9 @@
       
         <tags>
             
-            <tag> 提权 </tag>
-            
             <tag> SSH爆破 </tag>
+            
+            <tag> 提权 </tag>
             
             <tag> SNMP </tag>
             
@@ -362,13 +362,13 @@
       
         <tags>
             
+            <tag> SSH爆破 </tag>
+            
             <tag> 提权 </tag>
             
             <tag> PWN </tag>
             
             <tag> 栈溢出 </tag>
-            
-            <tag> SSH爆破 </tag>
             
         </tags>
       
